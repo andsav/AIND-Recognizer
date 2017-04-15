@@ -29,7 +29,8 @@ class ModelSelector(object):
         self.verbose = verbose
 
     def select(self):
-        raise NotImplementedError
+        best_num_components = self.n_constant
+        return self.base_model(best_num_components)
 
     def base_model(self, num_states):
         # with warnings.catch_warnings():
@@ -69,15 +70,39 @@ class SelectorBIC(ModelSelector):
     """
 
     def select(self):
-        """ select the best model for self.this_word based on
-        BIC score for n between self.min_n_components and self.max_n_components
-
+        """
         :return: GaussianHMM object
         """
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection based on BIC scores
-        raise NotImplementedError
+        N = len(self.lengths)
+        logN = np.log(N)
+
+        bic = float("inf")
+        ret = None
+
+        for n in range(self.min_n_components, self.max_n_components + 1):
+            try:
+                model = self.base_model(n)
+
+                # |transition matrix - 1 row| + free starting probabilities + #means (|covars matrix|)
+                # = N(N-1) + (N-1) + N*n
+                # = N^2 - N + N - 1 + 2(N*n)
+                # = N^2 + N*n -1
+                p = N ** 2 + 2 * n * N - 1
+
+                logL = model.score(self.X, self.lengths)
+
+                new_bic = -2 * logL + p * logN
+
+                if new_bic < bic:
+                    bic = new_bic
+                    ret = model
+
+            except:
+                continue
+
+        return ret
 
 
 class SelectorDIC(ModelSelector):
@@ -90,10 +115,29 @@ class SelectorDIC(ModelSelector):
     '''
 
     def select(self):
+        """
+        :return: GaussianHMM object
+        """
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection based on DIC scores
-        raise NotImplementedError
+        dic = float("-inf")
+        ret = None
+
+        for n in range(self.min_n_components, self.max_n_components + 1):
+            try:
+                model = self.base_model(n)
+
+                #todo
+                new_dic = 0
+
+                if new_dic > dic:
+                    dic = new_dic
+                    ret = model
+
+            except:
+                continue
+
+        return ret
 
 
 class SelectorCV(ModelSelector):
@@ -104,5 +148,4 @@ class SelectorCV(ModelSelector):
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection using CV
-        raise NotImplementedError
+        return None
