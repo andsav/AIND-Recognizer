@@ -126,9 +126,14 @@ class SelectorDIC(ModelSelector):
         for n in range(self.min_n_components, self.max_n_components + 1):
             try:
                 model = self.base_model(n)
+                logL = model.score(self.X, self.lengths)
 
-                #todo
-                new_dic = 0
+                logP = []
+                for word, (X, lengths) in self.hwords.items():
+                    if word != self.this_word:
+                        logP.append(model.score(X, lengths))
+
+                new_dic = logL - sum(logP) / (len(logP) - 1)
 
                 if new_dic > dic:
                     dic = new_dic
