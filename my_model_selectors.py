@@ -152,10 +152,10 @@ class SelectorCV(ModelSelector):
 
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
 
         cv = float("-inf")
         ret = None
-
         for n in range(self.min_n_components, self.max_n_components + 1):
             try:
                 # leave-one-out cross-validation limited at 50 folds for performance
@@ -171,7 +171,7 @@ class SelectorCV(ModelSelector):
                                             random_state=self.random_state, verbose=False).fit(X_train, lengths_train)
 
                         X_test, lengths_test = combine_sequences(test, self.sequences)
-    
+
                         scores.append(model.score(X_test, lengths_test))
                     except:
                         continue
