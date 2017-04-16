@@ -153,4 +153,36 @@ class SelectorCV(ModelSelector):
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        return None
+        cv = float("-inf")
+        ret = None
+
+        for n in range(self.min_n_components, self.max_n_components + 1):
+            try:
+                # leave-one-out cross-validation limited at 50 folds for performance
+                n_splits = min(len(self.sequences), 20)
+
+                kf = KFold(n_splits=n_splits, shuffle=True)
+
+                scores = []
+                for train, test in kf.split(self.sequences):
+                    try:
+                        X_train, lengths_train = combine_sequences(train, self.sequences)
+                        model = GaussianHMM(n_components=n, covariance_type="diag", n_iter=1000,
+                                            random_state=self.random_state, verbose=False).fit(X_train, lengths_train)
+
+                        X_test, lengths_test = combine_sequences(test, self.sequences)
+    
+                        scores.append(model.score(X_test, lengths_test))
+                    except:
+                        continue
+
+                new_cv = np.mean(scores)
+
+                if new_cv > cv:
+                    cv = new_cv
+                    ret = model
+
+            except:
+                continue
+
+        return ret
