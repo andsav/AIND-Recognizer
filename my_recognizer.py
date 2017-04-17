@@ -33,12 +33,12 @@ def recognize(models: dict, test_set: SinglesData):
 
                 if s > prob:
                     prob = s
-                    guess = word
+                    guess = word.rstrip('123456789')  # GO, GO1, GO2... are the same word
 
             except:
                 logL[word] = float("-inf")
                 pass
         probabilities.append(logL)
-        guesses.append(guess.rstrip('123456789'))
+        guesses.append(guess)
 
     return probabilities, guesses
