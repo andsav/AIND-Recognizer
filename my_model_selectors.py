@@ -158,7 +158,7 @@ class SelectorCV(ModelSelector):
         ret = None
         for n in range(self.min_n_components, self.max_n_components + 1):
             try:
-                # leave-one-out cross-validation limited at 50 folds for performance
+                # limit at 20 folds for performance
                 n_splits = min(len(self.sequences), 20)
 
                 kf = KFold(n_splits=n_splits, shuffle=True)
