@@ -39,6 +39,6 @@ def recognize(models: dict, test_set: SinglesData):
                 logL[word] = float("-inf")
                 pass
         probabilities.append(logL)
-        guesses.append(guess)
+        guesses.append(guess.rstrip('123456789'))
 
     return probabilities, guesses
